@@ -21,8 +21,10 @@ describe("User API Integration Tests", () => {
   });
 
   afterAll(async () => {
-    // Close database connection after all tests are done
-    await AppDataSource.destroy();
+    // Only try to close the connection if it was actually opened
+    if (AppDataSource.isInitialized) {
+      await AppDataSource.destroy();
+    }
   });
 
   afterEach(async () => {
