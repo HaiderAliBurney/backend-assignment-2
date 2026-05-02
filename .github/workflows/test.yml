@@ -1,25 +1,19 @@
 name: Node.js CI
 
-on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+on: [push, pull_request]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
-    # This creates a temporary PostgreSQL database for your tests
     services:
       postgres:
-        image: postgres:latest
+        image: postgres:15
         env:
           POSTGRES_DB: Assignment-2-db
-          POSTGRES_PASSWORD: password123
+          POSTGRES_PASSWORD: testpass123
         ports:
           - 5432:5432
-        # Wait until postgres is healthy before starting the job
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -27,25 +21,20 @@ jobs:
           --health-retries 5
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run tests
-        # We pass the DB credentials as env variables for the GitHub runner
+          cache: 'npm'
+      - run: npm install
+      - name: Run Integration Tests
         run: npm test
         env:
           DB_HOST: localhost
           DB_PORT: 5432
           DB_USERNAME: postgres
-          DB_PASSWORD: password123
+          DB_PASSWORD: testpass123
           DB_NAME: Assignment-2-db
-          JWT_SECRET: test-jwt-secret
-          JWT_REFRESH_SECRET: test-jwt-refresh-secret
+          JWT_SECRET: test-secret
+          JWT_REFRESH_SECRET: test-refresh-secret
+          NODE_OPTIONS: "--experimental-vm-modules"
